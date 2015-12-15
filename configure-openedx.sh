@@ -109,7 +109,7 @@ certs_version: "$OPENEDX_RELEASE"
 forum_version: "$OPENEDX_RELEASE"
 xqueue_version: "$OPENEDX_RELEASE"
 configuration_version: "appsembler/azureDeploy"
-edx_ansible_source_repo: "https://github.com/appsembler/configuration"
+edx_ansible_source_repo: "https://github.com/chenriksson/configuration"
 
 EOL
 
@@ -136,7 +136,7 @@ EOL
 ###################################################
 
 cd /tmp
-time git clone https://github.com/appsembler/configuration.git
+time git clone https://github.com/chenriksson/configuration.git
 cd configuration
 time git checkout appsembler/azureDeploy
 time sudo pip install -r requirements.txt
@@ -157,7 +157,7 @@ for i in `seq 1 $(($NUM_SERVERS-1))`; do
   echo "10.0.0.1$i" >> inventory.ini
 done
 
-curl https://raw.githubusercontent.com/tkeemon/openedx-azure-scalable/master/server-vars.yml > /tmp/server-vars.yml
+curl https://raw.githubusercontent.com/chenriksson/openedx-azure-scalable/master/server-vars.yml > /tmp/server-vars.yml
 
 sudo ansible-playbook -i inventory.ini -u $AZUREUSER --private-key=$HOMEDIR/.ssh/id_rsa multiserver_deploy.yml -e@/tmp/server-vars.yml -e@/tmp/extra_vars.yml -e@/tmp/db_vars.yml
 

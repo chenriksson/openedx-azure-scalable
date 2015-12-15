@@ -111,7 +111,7 @@
     "publicIPAddressNameMySql": "myPublicIPMySql",
     "publicIPAddressNameMongo": "myPublicIPMongo",
     "publicIPAddressType": "Dynamic",
-    "customScriptLocation": "https://raw.githubusercontent.com/tkeemon/openedx-azure-scalable/master/",
+    "customScriptLocation": "https://raw.githubusercontent.com/chenriksson/openedx-azure-scalable/master/",
     "wgetCommandPrefix": "[concat('wget --tries 20 --retry-connrefused --waitretry=15 -qO- ', variables('customScriptLocation'), 'configure-openedx.sh | nohup /bin/bash -s ')]",
     "wgetCommandPostfix":  " > /var/log/azure/openedx-scalable-install.log 2>&1 &'",
     "commandPrefix": "/bin/bash -c '",
