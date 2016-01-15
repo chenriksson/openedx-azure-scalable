@@ -78,6 +78,7 @@ time sudo apt-get -y update && sudo apt-get -y upgrade
 sudo apt-get -y install sshpass
 ssh-keygen -f $HOMEDIR/.ssh/id_rsa -t rsa -N ''
 
+# [chenriks]: cleanup with ssh-copy-id?
 #copy ssh key to all app servers (including localhost)
 for i in `seq 0 $(($NUM_SERVERS-1))`; do
   cat $HOMEDIR/.ssh/id_rsa.pub | sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" $AZUREUSER@10.0.0.1$i 'cat >> .ssh/authorized_keys && echo "Key copied Appserver #$i"'
@@ -109,7 +110,7 @@ certs_version: "$OPENEDX_RELEASE"
 forum_version: "$OPENEDX_RELEASE"
 xqueue_version: "$OPENEDX_RELEASE"
 configuration_version: "appsembler/azureDeploy"
-edx_ansible_source_repo: "https://github.com/appsembler/configuration"
+edx_ansible_source_repo: "https://github.com/chenriksson/configuration"
 
 EOL
 
@@ -136,7 +137,7 @@ EOL
 ###################################################
 
 cd /tmp
-time git clone https://github.com/appsembler/configuration.git
+time git clone https://github.com/chenriksson/configuration.git
 cd configuration
 time git checkout appsembler/azureDeploy
 time sudo pip install -r requirements.txt
@@ -157,9 +158,29 @@ for i in `seq 1 $(($NUM_SERVERS-1))`; do
   echo "10.0.0.1$i" >> inventory.ini
 done
 
-curl https://raw.githubusercontent.com/tkeemon/openedx-azure-scalable/master/server-vars.yml > /tmp/server-vars.yml
+# wait for scp of internal resources, up to 5 minutes
+retries=10
+until test $((retries--)) -le 0 -o -f "/tmp/pre-install.sh"; do sleep 30; done
+if [ ! -f /tmp/pre-install.sh ]; then
+  echo "Could not find pre-installation script at '/tmp/pre-install.sh'."
+  exit 1
+fi
 
-sudo ansible-playbook -i inventory.ini -u $AZUREUSER --private-key=$HOMEDIR/.ssh/id_rsa multiserver_deploy.yml -e@/tmp/server-vars.yml -e@/tmp/extra_vars.yml -e@/tmp/db_vars.yml
+sudo chmod 744 /tmp/pre-install.sh
+sudo /tmp/pre-install.sh
+
+if [ ! -f /tmp/transfer/server-vars.yml ]; then
+  echo "Could not find Open edX configuration at '/tmp/transfer/server-vars.yml'."
+  exit 1
+fi
+
+sudo ansible-playbook -i inventory.ini -u $AZUREUSER --private-key=$HOMEDIR/.ssh/id_rsa multiserver_deploy.yml -e@/tmp/transfer/server-vars.yml -e@/tmp/extra_vars.yml -e@/tmp/db_vars.yml
+
+if [ -f /tmp/transfer/post-install.sh ]
+then
+  sudo chmod 744 /tmp/transfer/post-install.sh
+  sudo /tmp/transfer/post-install.sh
+fi
 
 date
 echo "Completed Open edX multiserver provision on pid $$"
