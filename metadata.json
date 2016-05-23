@@ -1,7 +1,7 @@
 {
-  "itemDisplayName": "Create an Open edX multiserver instance",
-  "description": "This template creates two Ubuntu VMs (databases) and one horizontally scalable application server running Open edX.",
-  "summary": "Deploy Open edX scalable multiserver to Azure.",
+  "itemDisplayName": "Deploy Open edX (Dogwood) on multiple Ubuntu VMs.",
+  "description": "This template creates a network of Ubuntu VMs, and deploys Open edX native on them. Deployment supports 1-9 application VMs and backend Mongo and MySQL VMs.",
+  "summary": "Deploy Open edX (Dogwood) on multiple Ubuntu VMs.",
   "githubUsername": "chenriksson",
-  "dateUpdated": "2015-10-28"
+  "dateUpdated": "2016-05-05"
 }

@@ -2,50 +2,26 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "newStorageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Unique DNS Name Prefix for the Storage Account where the Virtual Machine's disks will be placed.  StorageAccounts may contain at most variables('vmsPerStorageAccount'). Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
-      }
-    },
     "adminUsername": {
       "type": "string",
       "defaultValue": "openedxuser",
       "metadata": {
-        "description": "User name for the Virtual Machine."
+        "description": "Administrator username."
       }
     },
     "adminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the Virtual Machine."
+        "description": "Administrator password."
       }
     },
-    "dnsNameForPublicIP": {
+    "dnsLabelPrefix": {
       "type": "string",
-      "defaultValue": "openedx-dns-name",
       "metadata": {
-        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+        "description": "DNS Label for the Public IP. Must be lowercase. It should match with the following regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$ or it will raise an error."
       }
     },
-    "vmAppSize": {
-      "type": "string",
-      "defaultValue": "Standard_D2",
-      "allowedValues": [
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14"
-      ],
-      "metadata": {
-        "description": "The VM role size of the edxapp server"
-      }
-    },
-    "numberOfAppVMs" : {
+    "appVmCount" : {
       "type": "int",
       "defaultValue": 1,
       "allowedValues": [
@@ -60,61 +36,133 @@
         9
       ],
       "metadata": {
-        "description": "Number of application servers behind the load balancer"
+        "description": "Number of application virtual machines behind the load balancer."
       }
     },
-    "vmMySqlSize": {
+    "appVmSize": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_D2_v2",
       "allowedValues": [
-        "Standard_D1",
+        "Standard_A2",
+        "Standard_A3",
+        "Standard_A4",
+        "Standard_A5",
+        "Standard_A6",
+        "Standard_A7",
+        "Standard_A8",
+        "Standard_A9",
+        "Standard_A10",
+        "Standard_A11",
         "Standard_D2",
         "Standard_D3",
         "Standard_D4",
         "Standard_D11",
         "Standard_D12",
         "Standard_D13",
-        "Standard_D14"
+        "Standard_D14",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_D11_v2",
+        "Standard_D12_v2",
+        "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2"
       ],
       "metadata": {
-        "description": "The VM role size of the MySQL server"
+        "description": "Size of the application virtual machine(s)."
       }
     },
-    "vmMongoSize": {
+    "mySqlVmSize": {
       "type": "string",
-      "defaultValue": "Standard_D1",
+      "defaultValue": "Standard_D2_v2",
       "allowedValues": [
-        "Standard_D1",
+        "Standard_A2",
+        "Standard_A3",
+        "Standard_A4",
+        "Standard_A5",
+        "Standard_A6",
+        "Standard_A7",
+        "Standard_A8",
+        "Standard_A9",
+        "Standard_A10",
+        "Standard_A11",
         "Standard_D2",
         "Standard_D3",
         "Standard_D4",
         "Standard_D11",
         "Standard_D12",
         "Standard_D13",
-        "Standard_D14"
+        "Standard_D14",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_D11_v2",
+        "Standard_D12_v2",
+        "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2"
       ],
       "metadata": {
-        "description": "The VM role size of the MongoDB server"
+        "description": "Size of the MySQL virtual machine."
+      }
+    },
+    "mongoVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2_v2",
+      "allowedValues": [
+        "Standard_A2",
+        "Standard_A3",
+        "Standard_A4",
+        "Standard_A5",
+        "Standard_A6",
+        "Standard_A7",
+        "Standard_A8",
+        "Standard_A9",
+        "Standard_A10",
+        "Standard_A11",
+        "Standard_D2",
+        "Standard_D3",
+        "Standard_D4",
+        "Standard_D11",
+        "Standard_D12",
+        "Standard_D13",
+        "Standard_D14",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_D11_v2",
+        "Standard_D12_v2",
+        "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2"
+      ],
+      "metadata": {
+        "description": "Size of the MongoDB virtual machine."
       }
     }
   },
   "variables": {
-    "vmAppName": "openedx-scalable-app",
-    "vmMySqlName": "openedx-scalable-mysql",
-    "vmMongoName": "openedx-scalable-mongo",
+    "apiVersion": "2015-06-15",
+    "openedxVersion": "named-release/dogwood.3",
+    "scriptDownloadUri": "https://raw.githubusercontent.com/chenriksson/openedx-azure-scalable/contribute/",
+    "scriptDownloadUri2": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/openedx-scalable-ubuntu/master/",
+    "installScript": "install-openedx.sh",
+    "installCommand": "[concat('bash -c ''nohup ./', variables('installScript'), ' ', variables('openedxVersion'), ' ', parameters('appVmCount'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' </dev/null &>/var/log/azure/openedx-install.log &''')]",
     "availabilitySetNodes": "avail-set",
     "osImagePublisher": "Canonical",
     "osImageOffer": "UbuntuServer",
     "osImageSKU" : "12.04.5-LTS",
-    "publicIPAddressName": "myPublicIP",
-    "publicIpAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
-    "publicIPAddressNameMySql": "myPublicIPMySql",
-    "publicIPAddressNameMongo": "myPublicIPMongo",
-    "publicIPAddressType": "Dynamic",
-    "customScriptLocation": "https://raw.githubusercontent.com/chenriksson/openedx-azure-scalable/master/",
-    "wgetCommandPrefix": "[concat('wget --tries 20 --retry-connrefused --waitretry=15 -qO- ', variables('customScriptLocation'), 'configure-openedx.sh | nohup /bin/bash -s ')]",
-    "wgetCommandPostfix":  " > /var/log/azure/openedx-scalable-install.log 2>&1 &'",
-    "commandPrefix": "/bin/bash -c '",
+    "appVmName": "openedx-app",
+    "mySqlVmName": "openedx-mysql",
+    "mongoVmName": "openedx-mongo",
+    "appPublicIPAddressName": "myPublicIP",
+    "mySqlPublicIPAddressName": "myPublicIPMySql",
+    "mongoPublicIPAddressName": "myPublicIPMongo",
+    "publicIPAddressType": "Dynamic",    
     "OSDiskName": "osdisk",
     "nicName": "vmNic",
     "virtualNetworkName": "VNET",
@@ -126,8 +174,9 @@
     "nsgName": "node-nsg",
     "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
     "storageAccountType": "Standard_LRS",
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'vhdsa')]",
     "vhdBlobContainer": "vhds",
-    "lbName": "openedxApplicationLB",
+    "lbName": "openedx-loadbalancer",
     "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
     "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/LoadBalancerBackend')]",
     "lbProbeLMSID": "[concat(variables('lbID'),'/probes/tcpProbeLMS')]",
@@ -136,53 +185,53 @@
   },
   "resources": [
     {
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[parameters('newStorageAccountName')]",
-      "apiVersion": "2015-05-01-preview",
+      "name": "[variables('storageAccountName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "accountType": "[variables('storageAccountType')]"
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('availabilitySetNodes')]",
       "location": "[resourceGroup().location]",
       "properties": {}
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('publicIPAddressName')]",
+      "name": "[variables('appPublicIPAddressName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
         "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+          "domainNameLabel": "[parameters('dnsLabelPrefix')]"
         }
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('publicIPAddressNameMySql')]",
+      "name": "[variables('mySqlPublicIPAddressName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]"
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('publicIPAddressNameMongo')]",
+      "name": "[variables('mongoPublicIPAddressName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]"
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
       "location": "[resourceGroup().location]",
@@ -209,7 +258,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsgName')]",
       "location": "[resourceGroup().location]",
@@ -261,9 +310,9 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('vmAppName'), '-nic',copyIndex())]",
+      "name": "[concat(variables('appVmName'), '-nic', copyIndex())]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
@@ -295,16 +344,16 @@
       },
       "copy": {
         "name": "appNetworkInterfacesCopy",
-        "count": "[parameters('numberOfAppVMs')]"
+        "count": "[parameters('appVmCount')]"
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('vmMySqlName'), '-nic')]",
+      "name": "[concat(variables('mySqlVmName'), '-nic')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressNameMySql'))]",
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('mySqlPublicIPAddressName'))]",
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "properties": {
@@ -315,7 +364,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "10.0.0.20",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressNameMySql'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('mySqlPublicIPAddressName'))]"
               },
               "subnet": {
                 "id": "[variables('subnetRef')]"
@@ -326,12 +375,12 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('vmMongoName'), '-nic')]",
+      "name": "[concat(variables('mongoVmName'), '-nic')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressNameMongo'))]",
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('mongoPublicIPAddressName'))]",
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "properties": {
@@ -342,7 +391,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "10.0.0.30",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressNameMongo'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('mongoPublicIPAddressName'))]"
               },
               "subnet": {
                 "id": "[variables('subnetRef')]"
@@ -353,12 +402,12 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "name": "[variables('lbName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location":"[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]"
+        "[concat('Microsoft.Network/publicIPAddresses/',variables('appPublicIPAddressName'))]"
       ],
       "properties": {
         "frontendIPConfigurations": [
@@ -366,7 +415,7 @@
             "name": "LoadBalancerFrontend",
             "properties": {
               "publicIPAddress": {
-                "id": "[variables('publicIPAddressID')]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('appPublicIPAddressName'))]"
               }
             }
           }
@@ -484,13 +533,13 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('vmAppName'),copyIndex())]",
+      "name": "[concat(variables('appVmName'),copyIndex())]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('vmAppName'), '-nic', copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('appVmName'), '-nic', copyIndex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNodes'))]"
       ],
       "properties": {
@@ -498,10 +547,10 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNodes'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('vmAppSize')]"
+          "vmSize": "[parameters('appVmSize')]"
         },
         "osProfile": {
-          "computername": "[concat(variables('vmAppName'),copyIndex())]",
+          "computername": "[concat(variables('appVmName'),copyIndex())]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -513,9 +562,9 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "[concat(variables('vmAppName'),copyIndex(),'-osdisk')]",
+            "name": "[concat(variables('appVmName'),copyIndex(),'-osdisk')]",
             "vhd": {
-              "uri": "[concat('http://', parameters('newStorageAccountName'), '.blob.core.windows.net/', variables('vhdBlobContainer'), '/', variables('vmAppName'), copyIndex(), '-disk.vhd')]"
+              "uri": "[concat('http://', variables('storageAccountName'), '.blob.core.windows.net/', variables('vhdBlobContainer'), '/', variables('appVmName'), copyIndex(), '-disk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -524,24 +573,24 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmAppName'), '-nic', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('appVmName'), '-nic', copyIndex()))]"
             }
           ]
         }
       },
       "copy": {
         "name": "appVMCopy",
-        "count": "[parameters('numberOfAppVMs')]"
+        "count": "[parameters('appVmCount')]"
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmMySqlName')]",
+      "name": "[variables('mySqlVmName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('vmMySqlName'), '-nic')]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('mySqlVmName'), '-nic')]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNodes'))]"
       ],
       "properties": {
@@ -549,10 +598,10 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNodes'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('vmMySqlSize')]"
+          "vmSize": "[parameters('mySqlVmSize')]"
         },
         "osProfile": {
-          "computername": "[variables('vmMySqlName')]",
+          "computername": "[variables('mySqlVmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -564,9 +613,9 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "[concat(variables('vmMySqlName'),'-osdisk')]",
+            "name": "[concat(variables('mySqlVmName'),'-osdisk')]",
             "vhd": {
-              "uri": "[concat('http://', parameters('newStorageAccountName'), '.blob.core.windows.net/', variables('vhdBlobContainer'), '/', variables('vmMySqlName'), '-disk.vhd')]"
+              "uri": "[concat('http://', variables('storageAccountName'), '.blob.core.windows.net/', variables('vhdBlobContainer'), '/', variables('mySqlVmName'), '-disk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -575,20 +624,20 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmMySqlName'), '-nic'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('mySqlVmName'), '-nic'))]"
             }
           ]
         }
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmMongoName')]",
+      "name": "[variables('mongoVmName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('vmMongoName'), '-nic')]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('mongoVmName'), '-nic')]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNodes'))]"
       ],
       "properties": {
@@ -596,10 +645,10 @@
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNodes'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('vmMongoSize')]"
+          "vmSize": "[parameters('mongoVmSize')]"
         },
         "osProfile": {
-          "computername": "[variables('vmMongoName')]",
+          "computername": "[variables('mongoVmName')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -611,9 +660,9 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "[concat(variables('vmMongoName'),'-osdisk')]",
+            "name": "[concat(variables('mongoVmName'),'-osdisk')]",
             "vhd": {
-              "uri": "[concat('http://', parameters('newStorageAccountName'), '.blob.core.windows.net/', variables('vhdBlobContainer'), '/', variables('vmMongoName'), '-disk.vhd')]"
+              "uri": "[concat('http://', variables('storageAccountName'), '.blob.core.windows.net/', variables('vhdBlobContainer'), '/', variables('mongoVmName'), '-disk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -622,26 +671,33 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmMongoName'), '-nic'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('mongoVmName'), '-nic'))]"
             }
           ]
         }
       }
     },    
     {
+      "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmAppName'), '0', '/configuremaster')]",
-      "apiVersion": "2015-06-15",
+      "name": "[concat(variables('appVmName'), '0', '/installscript')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('vmAppName'), '0')]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('appVmName'), '0')]"
       ],
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "CustomScriptForLinux",
         "typeHandlerVersion": "1.3",
+        "autoUpgradeMinorVersion": true,
         "settings": {
-          "commandToExecute": "[concat(variables('commandPrefix'), variables('wgetCommandPrefix'), parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('numberOfAppVMs'), variables('wgetCommandPostfix'))]"
+          "fileUris": [
+            "[concat(variables('scriptDownloadUri'), variables('installScript'))]",
+            "[concat(variables('scriptDownloadUri'), 'server-vars.yml')]"
+          ]
+        },
+        "protectedSettings": {        
+          "commandToExecute": "[variables('installCommand')]"
         }
       }
     }

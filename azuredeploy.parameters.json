@@ -1,26 +1,27 @@
 {
-  "newStorageAccountName": {
-    "value": "newopenedxstorage"
-  },
-  "adminUsername": {
-    "value": "openedxuser"
-  },
-  "adminPassword": {
-    "value": "password1234$"
-  },
-  "dnsNameForPublicIP": {
-    "value": "open-edx-azure-dns"
-  },
-  "vmappsize" : {
-    "value": "Standard_D2"
-  },
-  "numberofappvms" : {
-    "value": 1
-  },
-  "vmmysqlsize" : {
-    "value": "Standard_D2"
-  },
-  "vmmongosize" : {
-    "value": "Standard_D2"
-  },
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "value": "openedxuser"
+    },
+    "adminPassword": {
+      "value": "GEN-PASSWORD"
+    },
+    "dnsLabelPrefix": {
+      "value": "GEN-UNIQUE-8"
+    },
+    "appVmCount" : {
+      "value": 1
+    },
+    "appVmSize" : {
+      "value": "Standard_D2_v2"
+    },
+    "mySqlVmSize" : {
+      "value": "Standard_D2_v2"
+    },
+    "mongoVmSize" : {
+      "value": "Standard_D2_v2"
+    }
+  }
 }
