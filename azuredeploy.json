@@ -152,7 +152,7 @@
     "scriptDownloadUri2": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/openedx-scalable-ubuntu/master/",
     "installScript": "install-openedx.sh",
     "installCommand": "[concat('bash -c ''nohup ./', variables('installScript'), ' ', variables('openedxVersion'), ' ', parameters('appVmCount'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' </dev/null &>/var/log/azure/openedx-install.log &''')]",
-    "availabilitySetNodes": "avail-set",
+    "availabilitySetName": "avail-set",
     "osImagePublisher": "Canonical",
     "osImageOffer": "UbuntuServer",
     "osImageSKU" : "12.04.5-LTS",
@@ -196,7 +196,7 @@
     {
       "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[variables('availabilitySetNodes')]",
+      "name": "[variables('availabilitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {}
     },
@@ -540,11 +540,11 @@
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('appVmName'), '-nic', copyIndex())]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNodes'))]"
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
       ],
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNodes'))]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('appVmSize')]"
@@ -590,13 +590,9 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('mySqlVmName'), '-nic')]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNodes'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('mySqlVmName'), '-nic')]"
       ],
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNodes'))]"
-        },
         "hardwareProfile": {
           "vmSize": "[parameters('mySqlVmSize')]"
         },
@@ -637,13 +633,9 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('mongoVmName'), '-nic')]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNodes'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('mongoVmName'), '-nic')]"
       ],
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNodes'))]"
-        },
         "hardwareProfile": {
           "vmSize": "[parameters('mongoVmSize')]"
         },
