@@ -316,7 +316,8 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
-        "[concat('Microsoft.Network/loadBalancers/',variables('lbName'))]"
+        "[concat('Microsoft.Network/loadBalancers/',variables('lbName'))]",
+        "[concat('Microsoft.Network/loadBalancers/',variables('lbName'), '/inboundNatRules/SSH-VM', copyIndex())]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -425,32 +426,6 @@
             "name": "LoadBalancerBackend"
           }
         ],
-        "inboundNatRules": [
-          {
-            "name":"SSH-VM0",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id":"[variables('frontEndIPConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 2222,
-              "backendPort": 22,
-              "enableFloatingIP": false
-            }
-          },
-          {
-            "name":"SSH-VM1",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id":"[variables('frontEndIPConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 2223,
-              "backendPort": 22,
-              "enableFloatingIP": false
-            }
-          }
-        ],
         "loadBalancingRules": [
           {
             "name": "LBRuleLMS",
@@ -530,6 +505,28 @@
             }
           }
         ]
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules",
+      "name": "[concat(variables('lbName'), '/SSH-VM', copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+          "[concat('Microsoft.Network/loadBalancers/',variables('lbName'))]"
+      ],
+      "properties": {
+          "frontendIPConfiguration": {
+              "id": "[variables('frontEndIPConfigID')]"
+          },
+          "protocol": "tcp",
+          "frontendPort": "[copyIndex(2222)]",
+          "backendPort": 22,
+          "enableFloatingIP": false
+      },
+      "copy": {
+          "name": "inboundNatRulesCopy",
+          "count": "[parameters('appVmCount')]"
       }
     },
     {
