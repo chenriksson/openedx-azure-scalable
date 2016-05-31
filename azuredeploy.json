@@ -312,7 +312,7 @@
     {
       "apiVersion": "[variables('apiVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('appVmName'), '-nic', copyIndex())]",
+      "name": "[concat(variables('appVmName'), copyIndex(), '-nic')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
@@ -520,7 +520,7 @@
               "id": "[variables('frontEndIPConfigID')]"
           },
           "protocol": "tcp",
-          "frontendPort": "[copyIndex(2222)]",
+          "frontendPort": "[copyIndex(2220)]",
           "backendPort": 22,
           "enableFloatingIP": false
       },
@@ -536,7 +536,7 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('appVmName'), '-nic', copyIndex())]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('appVmName'), copyIndex(), '-nic')]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
       ],
       "properties": {
@@ -570,7 +570,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('appVmName'), '-nic', copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('appVmName'), copyIndex(), '-nic'))]"
             }
           ]
         }
@@ -682,7 +682,9 @@
         "settings": {
           "fileUris": [
             "[concat(variables('scriptDownloadUri'), variables('installScript'))]",
-            "[concat(variables('scriptDownloadUri'), 'server-vars.yml')]"
+            "[concat(variables('scriptDownloadUri'), 'scalable.yml')]",
+            "[concat(variables('scriptDownloadUri'), 'server-vars.yml')]",
+            "[concat(variables('scriptDownloadUri'), 'inventory.ini')]"
           ]
         },
         "protectedSettings": {        
