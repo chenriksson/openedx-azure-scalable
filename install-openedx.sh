@@ -8,7 +8,8 @@ APP_VM_COUNT=$2
 ADMIN_USER=$3
 ADMIN_PASS=$4
 ADMIN_HOME=/home/$ADMIN_USER
-CONFIG_REPO=https://github.com/edx/configuration.git
+CONFIG_REPO=https://github.com/chenriksson/configuration.2.git
+CONFIG_VERSION=dogwood.3.1
 ANSIBLE_ROOT=/edx/app/edx_ansible
 
 wget https://raw.githubusercontent.com/edx/configuration/master/util/install/ansible-bootstrap.sh -O- | bash
@@ -25,7 +26,7 @@ then
     chown -R $ADMIN_USER:$ADMIN_USER $ADMIN_HOME/.ssh/
 fi
 
-for i in `seq 1 $(($APP_VM_COUNT-1))`; do
+for i in `seq 0 $(($APP_VM_COUNT-1))`; do
   echo "10.0.0.1$i" >> inventory.ini
   send-ssh-key 10.0.0.1$i $ADMIN_USER $ADMIN_PASS
 done
@@ -47,15 +48,8 @@ cd /tmp
 git clone $CONFIG_REPO
 
 cd configuration
-git checkout $OPENEDX_RELEASE
+git checkout $CONFIG_VERSION
 pip install -r requirements.txt
 
 cd playbooks
-#sudo ansible-playbook -i $ANSIBLE_ROOT/inventory.ini -u $ADMIN_USER --private-key=$ADMIN_HOME/.ssh/id_rsa edx-east/mysql.yml -e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra_vars.yml --limit mysql
-#sudo ansible-playbook -i $ANSIBLE_ROOT/inventory.ini -u $ADMIN_USER --private-key=$ADMIN_HOME/.ssh/id_rsa edx-east/mongo.yml -e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra_vars.yml --limit mongo --tags "install,manage"
-#sudo ansible-playbook -i $ANSIBLE_ROOT/inventory.ini -u $ADMIN_USER --private-key=$ADMIN_HOME/.ssh/id_rsa edx-sandbox.yml -e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra_vars.yml --limit appservers
-
-#sudo ansible-playbook -i $ANSIBLE_ROOT/inventory.ini -u $ADMIN_USER --private-key=$ADMIN_HOME/.ssh/id_rsa $ANSIBLE_ROOT/scalable.yml -e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra_vars.yml
-#sudo ansible-playbook -i localhost, -c local edx-east/edxapp_migrate.yml -e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra_vars.yml
-
-# still need memcached config update
+#sudo ansible-playbook -i $ANSIBLE_ROOT/inventory.ini -u $ADMIN_USER --private-key="$ADMIN_HOME/.ssh/id_rsa" edx_sandbox_scalable.yml -e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra-vars.yml
