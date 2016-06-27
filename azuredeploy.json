@@ -682,7 +682,6 @@
         "settings": {
           "fileUris": [
             "[concat(variables('scriptDownloadUri'), variables('installScript'))]",
-            "[concat(variables('scriptDownloadUri'), 'scalable.yml')]",
             "[concat(variables('scriptDownloadUri'), 'server-vars.yml')]",
             "[concat(variables('scriptDownloadUri'), 'inventory.ini')]"
           ]
