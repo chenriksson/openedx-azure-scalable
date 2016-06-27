@@ -45,7 +45,7 @@ EOF"
 sudo -u edx-ansible cp *.{ini,yml} $ANSIBLE_ROOT
 
 cd /tmp
-git clone $CONFIG_REPO
+git clone $CONFIG_REPO configuration
 
 cd configuration
 git checkout $CONFIG_VERSION
