@@ -9,7 +9,7 @@
 
 This template deploys the Open edX native on Ubuntu VMs. Deployment supports up to 9 application VMs and separate, backend Mongo and MySQL VMs. A default server-vars.yml is saved to */edx/app/edx_ansible*.
 
-Connect to the application VMs with SSH: `ssh {adminUsername}@{dnsLabelPrefix}.{region}.cloudapp.azure.com -p {frontendPort}`, where the frontendPort is 2222 for the first application VM, and 2223-222X for others. Installation log can be found under */var/log/azure*.
+Connect to the application VMs with SSH: `ssh {adminUsername}@{dnsLabelPrefix}.{region}.cloudapp.azure.com -p {frontendPort}`, where the frontendPort is 2220 for the first application VM, and 2221-2229 for others. Installation log can be found under */var/log/azure*.
 
 Private IPs inside the virtual network are:
 - Application VMs: 10.0.0.10-10.0.0.19

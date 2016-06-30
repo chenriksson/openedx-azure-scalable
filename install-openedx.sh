@@ -7,6 +7,7 @@ export OPENEDX_RELEASE=$1
 APP_VM_COUNT=$2
 ADMIN_USER=$3
 ADMIN_PASS=$4
+ADMIN_HOME=/home/$ADMIN_USER
 CONFIG_REPO=https://github.com/chenriksson/configuration.2.git
 CONFIG_VERSION=dogwood.3.1
 ANSIBLE_ROOT=/edx/app/edx_ansible
@@ -19,10 +20,10 @@ function send-ssh-key {
     cat /home/$user/.ssh/id_rsa.pub | sshpass -p $pass ssh -o "StrictHostKeyChecking no" $user@$host 'cat >> .ssh/authorized_keys';
 }
 
-if [ ! -f ~$ADMIN_USER/.ssh/id_rsa ]
+if [ ! -f $ADMIN_HOME/.ssh/id_rsa ]
 then
-    ssh-keygen -f ~$ADMIN_USER/.ssh/id_rsa -t rsa -N ''
-    chown -R $ADMIN_USER:$ADMIN_USER ~$ADMIN_USER/.ssh/
+    ssh-keygen -f $ADMIN_HOME/.ssh/id_rsa -t rsa -N ''
+    chown -R $ADMIN_USER:$ADMIN_USER $ADMIN_HOME/.ssh/
 fi
 
 for i in `seq 0 $(($APP_VM_COUNT-1))`; do
@@ -56,8 +57,16 @@ pip install -r requirements.txt
 
 cd playbooks
 export ANSIBLE_OPT_VARS="-e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra-vars.yml"
-export ANSIBLE_OPT_SSH="-u $ADMIN_USER --private-key=~$ADMIN_USER/.ssh/id_rsa"
+export ANSIBLE_OPT_SSH="-u $ADMIN_USER --private-key=$ADMIN_HOME/.ssh/id_rsa"
+
 sudo ansible-playbook edx_mongo.yml -i "10.0.0.30," $ANSIBLE_OPT_SSH $ANSIBLE_OPT_VARS
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
 sudo ansible-playbook edx_mysql.yml -i "10.0.0.20," $ANSIBLE_OPT_SSH $ANSIBLE_OPT_VARS
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
 sudo ansible-playbook edx_sandbox.yml -i "localhost," -c local $ANSIBLE_OPT_VARS -e "migrate_db=yes"
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
 sudo ansible-playbook edx_sandbox.yml -i $ANSIBLE_ROOT/inventory.ini $ANSIBLE_OPT_SSH $ANSIBLE_OPT_VARS --limit app
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
