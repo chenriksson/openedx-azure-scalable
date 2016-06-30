@@ -43,6 +43,7 @@ forum_version: \"$OPENEDX_RELEASE\"
 xqueue_version: \"$OPENEDX_RELEASE\"
 configuration_version: \"$CONFIG_VERSION\"
 edx_ansible_source_repo: \"$CONFIG_REPO\"
+COMMON_SSH_PASSWORD_AUTH: \"yes\"
 EOF"
 sudo -u edx-ansible cp *.{ini,yml} $ANSIBLE_ROOT
 
