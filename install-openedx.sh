@@ -41,7 +41,7 @@ edx_platform_version: \"$OPENEDX_RELEASE\"
 certs_version: \"$OPENEDX_RELEASE\"
 forum_version: \"$OPENEDX_RELEASE\"
 xqueue_version: \"$OPENEDX_RELEASE\"
-configuration_version: \"$OPENEDX_RELEASE\"
+configuration_version: \"$CONFIG_VERSION\"
 edx_ansible_source_repo: \"$CONFIG_REPO\"
 EOF"
 sudo -u edx-ansible cp *.{ini,yml} $ANSIBLE_ROOT
@@ -54,9 +54,9 @@ git checkout $CONFIG_VERSION
 pip install -r requirements.txt
 
 cd playbooks
-export ANSIBLE_OPT_VARS=-e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra-vars.yml
+export ANSIBLE_OPT_VARS="-e@$ANSIBLE_ROOT/server-vars.yml -e@$ANSIBLE_ROOT/extra-vars.yml"
 export ANSIBLE_OPT_SSH="-u $ADMIN_USER --private-key=~$ADMIN_USER/.ssh/id_rsa"
 sudo ansible-playbook edx_mongo.yml -i "10.0.0.30," $ANSIBLE_OPT_SSH $ANSIBLE_OPT_VARS
 sudo ansible-playbook edx_mysql.yml -i "10.0.0.20," $ANSIBLE_OPT_SSH $ANSIBLE_OPT_VARS
-sudo ansible-playbook edx_sandbox.yml -i "localhost," -c local $ANSIBLE_OPT_VARS
+sudo ansible-playbook edx_sandbox.yml -i "localhost," -c local $ANSIBLE_OPT_VARS -e "migrate_db=yes"
 sudo ansible-playbook edx_sandbox.yml -i $ANSIBLE_ROOT/inventory.ini $ANSIBLE_OPT_SSH $ANSIBLE_OPT_VARS --limit app
